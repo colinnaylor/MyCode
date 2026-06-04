@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riefield IT Solutions Ltd</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="script.js"></script>
+</head>
+<body>
+    <header>
+        <img src="https://riefield.com/Rye.png" alt="" width="56" height="100" />
+        <h1>Riefield IT Solutions Ltd</h1>
+    </header>
+    
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Expert IT Solutions for Your Business</h1>
+            <p>Delivering innovative technology services tailored to your needs.</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Our Services</h2>
+        <div class="services">
+            <div class="service-box" id="Cloud">
+                <h3>Cloud Solutions</h3>
+                <p>Secure and scalable cloud computing services.</p>
+            </div>
+            <div class="service-box" id="Cyber">
+                <h3>Cybersecurity</h3>
+                <p>Protect your business with cutting-edge security solutions.</p>
+            </div>
+            <div class="service-box" id="Consultancy">
+                <h3>IT Consultancy</h3>
+                <p>Expert advice to drive your business forward.</p>
+            </div>
+            <div class="service-box" id="ITsupport">
+                <h3>IT Support and Managed Services</h3>
+		<p>RIEFIELD IT Solutions doesnt offer IT support and managed services directly, but we highly recommend <a href="https://www.systemxit.com/" target="_blank" rel="noopener noreferrer">SystemXI.T.</a> who can effectively manage for you.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const cloud = document.getElementById('Cloud');
+
+        cloud.addEventListener('mouseover', () => {
+            cloud.innerHTML = '<h3>Cloud Solutions</h3>\n<p>Data storage in the cloud in a SQL database or similar, accessible by webpages and your onsite solutions.</p>';
+        });
+
+        cloud.addEventListener('mouseout', () => {
+            cloud.innerHTML = '<h3>Cloud Solutions</h3>\n<p>Secure and scalable cloud computing services.</p>';
+        });
+
+        const cyber = document.getElementById('Cyber');
+
+        cyber.addEventListener('mouseover', () => {
+            cyber.innerHTML = '<h3>Cybersecurity</h3>\n<p>Ensure that only the people that you want can access your data.</p>';
+        });
+
+        cyber.addEventListener('mouseout', () => {
+            cyber.innerHTML = '<h3>Cybersecurity</h3><p>Protect your business with cutting-edge security solutions.</p>';
+        });
+
+        const consult = document.getElementById('Consultancy');
+
+        consult.addEventListener('mouseover', () => {
+            consult.innerHTML = '<h3>IT Consultancy</h3>\n<p>Advice on client-server, webpages, desktop applications, databases, workflows, services and good user experiences.</p>';
+        });
+
+        consult.addEventListener('mouseout', () => {
+            consult.innerHTML = '<h3>IT Consultancy</h3><p>Expert advice to drive your business forward.</p>';
+        });
+
+    </script>
+
+    <div class="contact">
+        <h2>Contact Us</h2>
+        <p>Email: <a href="mailto:info@riefield.com" style="color: white;">info@riefield.com</a></p>
+        <p>Riefield IT Solutions Ltd is registered in England and Wales (16231982) </p>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Riefield IT Solutions Ltd. All Rights Reserved.</p>
+		<p><a href="Riefield_IT_Solutions_Privacy_Policy.pdf">Privacy policy</a></p>
+		<p><a href="Riefield_IT_Solutions_Cookie_Policy.pdf">Cookie policy</a></p>
+    </footer>
+</body>
+</html>

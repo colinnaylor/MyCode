@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Revision Tool — Terms & Meanings</title>
+  <style>
+    :root{
+      --bg:#0f172a;/* slate-900 */
+      --panel:#111827;/* gray-900 */
+      --card:#111827;
+      --muted:#94a3b8;/* slate-400 */
+      --text:#e5e7eb;/* gray-200 */
+      --accent:#22d3ee;/* cyan-400 */
+      --accent2:#a78bfa;/* violet-400 */
+      --danger:#ef4444;/* red-500 */
+      --ok:#22c55e;/* green-500 */
+      --warn:#f59e0b;/* amber-500 */
+      --radius:16px;
+    }
+    html,body{height:100%;}
+    body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a 30%,#0b1220);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans","Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px 48px;}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+    h1{font-size:clamp(20px,2.8vw,30px);margin:0;font-weight:800;letter-spacing:.2px}
+    .badge{padding:.20rem .5rem;border-radius:999px;background:rgba(34,211,238,.12);color:var(--accent);border:1px solid rgba(34,211,238,.35);font-size:12px}
+    .panel{background:rgba(17,24,39,.6);border:1px solid rgba(148,163,184,.15);backdrop-filter: blur(8px);border-radius:var(--radius);padding:12px}
+    nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+    .tab{border:1px solid rgba(148,163,184,.2);background:rgba(2,6,23,.6);padding:.55rem .8rem;border-radius:999px;color:var(--text);cursor:pointer;user-select:none}
+    .tab.active{border-color:rgba(167,139,250,.4);box-shadow:0 0 0 2px rgba(167,139,250,.15) inset;color:#fff}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+    .controls .grp{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{appearance:none;border:1px solid rgba(148,163,184,.25);background:rgba(2,6,23,.6);color:var(--text);padding:.55rem .8rem;border-radius:10px;cursor:pointer}
+    .btn.primary{border-color:rgba(34,211,238,.5);background:linear-gradient(180deg,rgba(34,211,238,.25),rgba(2,6,23,.6));}
+    .btn.ok{border-color:rgba(34,197,94,.5)}
+    .btn.warn{border-color:rgba(245,158,11,.5)}
+    .btn.danger{border-color:rgba(239,68,68,.55)}
+    .btn:active{transform:translateY(1px)}
+    .search{flex:1;min-width:220px;display:flex}
+    .search input{flex:1;border:1px solid rgba(148,163,184,.25);background:rgba(2,6,23,.6);color:var(--text);padding:.6rem .8rem;border-radius:10px;outline:none}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .card{background:rgba(2,6,23,.65);border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:12px;min-height:120px;position:relative}
+    .term{font-weight:700;font-size:18px;margin-bottom:6px}
+    .meaning{color:var(--muted)}
+    .pill{position:absolute;top:10px;right:10px;border:1px solid rgba(148,163,184,.25);border-radius:999px;padding:.15rem .5rem;font-size:12px;color:var(--muted)}
+    .star{position:absolute;bottom:10px;right:10px;cursor:pointer;font-size:18px;opacity:.8}
+    .star.active{color:var(--accent2);text-shadow:0 0 10px rgba(167,139,250,.5)}
+    .flash{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:12px}
+    .flashcard{width:min(720px,100%);min-height:200px;border-radius:18px;border:1px solid rgba(148,163,184,.25);background:rgba(2,6,23,.7);padding:18px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+    .flashcard .q{font-size:22px;font-weight:800}
+    .flashcard .a{margin-top:12px;color:var(--muted);font-size:18px}
+    .progress{height:8px;background:rgba(148,163,184,.25);border-radius:999px;overflow:hidden}
+    .progress>div{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0%}
+    .muted{color:var(--muted);font-size:14px}
+    .mcq{display:grid;gap:8px;width:min(720px,100%)}
+    .mcq .choice{border:1px solid rgba(148,163,184,.25);padding:.7rem .9rem;border-radius:12px;background:rgba(2,6,23,.7);cursor:pointer;text-align:left;color:var(--text);font-weight:600}
+    .mcq .choice:hover,.mcq .choice:focus{outline:none;box-shadow:0 0 0 2px rgba(167,139,250,.35) inset}
+    .mcq .choice:active{transform:translateY(1px)}
+    .choice.correct{border-color:rgba(34,197,94,.6);box-shadow:0 0 0 2px rgba(34,197,94,.25) inset}
+    .choice.wrong{border-color:rgba(239,68,68,.6);box-shadow:0 0 0 2px rgba(239,68,68,.2) inset}
+    dialog{border:none;border-radius:16px;background:#0b1020;color:var(--text);padding:0;max-width:720px;width:95%}
+    .dlg-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(148,163,184,.2)}
+    .dlg-b{padding:16px}
+    textarea, input[type="file"]{width:100%;background:rgba(2,6,23,.7);color:var(--text);border:1px solid rgba(148,163,184,.25);border-radius:10px;padding:.6rem .8rem}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;background:#111827;border:1px solid rgba(148,163,184,.25);border-bottom-width:3px;border-radius:6px;padding:0 .35rem}
+    footer{margin-top:24px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Revision Tool <span class="badge">terms & meanings</span></h1>
+      <div class="muted">Press <span class="kbd">F</span> to flip flashcard · <span class="kbd">←/→</span> to navigate</div>
+    </header>
+
+    <div class="panel">
+      <nav class="tabs" id="tabs">
+        <button class="tab active" data-tab="browse">Browse</button>
+        <button class="tab" data-tab="flash">Flashcards</button>
+        <button class="tab" data-tab="quiz">Quiz</button>
+        <button class="tab" data-tab="manage">Import/Export</button>
+      </nav>
+
+      <div class="controls" id="controls">
+        <div class="search"><input id="q" placeholder="Search terms or meanings…"/></div>
+        <div class="grp">
+          <button class="btn" id="shuffleBtn">Shuffle</button>
+          <button class="btn" id="starredBtn">Starred only: Off</button>
+          <button class="btn warn" id="reverseBtn">Ask with: Term → Meaning</button>
+          <button class="btn danger" id="resetBtn" title="Clears progress (not your data)">Reset progress</button>
+        </div>
+      </div>
+
+      <section id="browse" class="view">
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <section id="flash" class="view" hidden>
+        <div class="flash">
+          <div class="progress"><div id="bar"></div></div>
+          <div class="flashcard" id="flashcard">
+            <div class="q" id="fcQ">Add some terms to begin</div>
+            <div class="a" id="fcA" hidden></div>
+          </div>
+          <div class="grp">
+            <button class="btn" id="prev">← Prev</button>
+            <button class="btn primary" id="flip">Flip (F)</button>
+            <button class="btn" id="next">Next →</button>
+            <button class="btn ok" id="gotIt">I knew it</button>
+            <button class="btn" id="retry">Needs work</button>
+          </div>
+          <div class="muted">Spaced practice: items you mark as “Needs work” will appear more often.</div>
+        </div>
+      </section>
+
+      <section id="quiz" class="view" hidden>
+        <div class="flash">
+          <div class="progress"><div id="qbar"></div></div>
+          <div class="flashcard">
+            <div class="q" id="mqQ">Add some terms to begin</div>
+          </div>
+          <div class="mcq" id="choices"></div>
+        </div>
+      </section>
+
+      <section id="manage" class="view" hidden>
+        <div class="dlg-b">
+          <p><strong>Quick import</strong> (paste lines like <code>term : meaning</code> or CSV “term,meaning”):</p>
+          <textarea id="bulk" rows="8" placeholder="e.g.\nCPU : Central Processing Unit\nRAM : Random Access Memory\n…"></textarea>
+          <div class="grp" style="margin-top:8px">
+            <button class="btn primary" id="parse">Add to deck</button>
+            <button class="btn" id="example">Load example</button>
+            <button class="btn" id="exportJson">Export JSON</button>
+            <label class="btn"><input type="file" id="file" accept=".json,.csv,.txt" hidden/> Import file…</label>
+            <button class="btn danger" id="wipe">Wipe ALL terms</button>
+          </div>
+          <p class="muted">Data is stored locally in your browser (no servers). You can export/import to move devices.</p>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Built for quick revision: browse, star, flip cards, or take quizzes. Progress (right/wrong counts and stars) is saved in <code>localStorage</code>.
+    </footer>
+  </div>
+
+  <script>
+    // ---------- Storage & state ----------
+    const LS_KEY = 'rev_terms_v1';
+    let state = {
+      items: [], // {id, term, meaning, starred, right, wrong}
+      order: [],
+      showStarred: false,
+      reverse: false, // false: Term->Meaning, true: Meaning->Term
+      idx: 0,
+      rng: Math.random,
+    };
+
+    function save(){ localStorage.setItem(LS_KEY, JSON.stringify({items: state.items})); }
+    function load(){ try{ const d = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); if(Array.isArray(d.items)) state.items = d.items; }catch(e){} }
+
+    // ---------- Helpers ----------
+    const byId = id => document.getElementById(id);
+    const grid = byId('grid');
+    function uid(){ return Math.random().toString(36).slice(2,9); }
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+    function filtered(){
+      const q = byId('q').value.trim().toLowerCase();
+      const source = state.items.filter(x=> !state.showStarred || x.starred);
+      return source.filter(x=> (x.term+" "+x.meaning).toLowerCase().includes(q));
+    }
+
+    // ---------- UI: Tabs ----------
+    const tabs = document.querySelectorAll('.tab');
+    const views = { browse:byId('browse'), flash:byId('flash'), quiz:byId('quiz'), manage:byId('manage') };
+    tabs.forEach(t=>t.addEventListener('click',()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      Object.values(views).forEach(v=>v.hidden=true);
+      views[t.dataset.tab].hidden=false;
+      if(t.dataset.tab==='flash') setupFlash();
+      if(t.dataset.tab==='quiz') setupQuiz();
+      render();
+    }));
+
+    // ---------- Render: Browse grid ----------
+    function render(){
+      // Controls labels
+      byId('starredBtn').textContent = `Starred only: ${state.showStarred? 'On':'Off'}`;
+      byId('reverseBtn').textContent = `Ask with: ${state.reverse? 'Meaning → Term':'Term → Meaning'}`;
+
+      const list = filtered();
+      grid.innerHTML = '';
+      if(!list.length){ grid.innerHTML = `<div class="muted">No items. Add some in <strong>Import/Export</strong>.</div>`; return; }
+      for(const it of list){
+        const card = document.createElement('div'); card.className='card';
+        const star = document.createElement('div'); star.className='star'+(it.starred?' active':''); star.textContent='★';
+        star.title = it.starred? 'Unstar':'Star';
+        star.onclick = ()=>{ it.starred=!it.starred; save(); render(); };
+        const pill = document.createElement('div'); pill.className='pill'; pill.textContent = `✔ ${it.right||0} · ✖ ${it.wrong||0}`;
+        const term = document.createElement('div'); term.className='term'; term.textContent = it.term;
+        const m = document.createElement('div'); m.className='meaning'; m.textContent = it.meaning;
+        card.append(pill, term, m, star); grid.append(card);
+      }
+    }
+
+    // ---------- Import / Export ----------
+    function addItems(arr){
+      for(const a of arr){
+        if(!a.term || !a.meaning) continue;
+        state.items.push({id:uid(), term:a.term.trim(), meaning:a.meaning.trim(), starred:false, right:0, wrong:0});
+      }
+      save();
+      rebuildOrder();
+      render();
+    }
+
+    function parseLines(text){
+      const out=[];
+      text.split(/\n+/).forEach(line=>{
+        line=line.trim(); if(!line) return;
+        // term : meaning  |  term - meaning  |  CSV: term,meaning
+        let m=line.match(/^([^,:\-]+)\s*[:\-,]\s*(.+)$/);
+        if(m){ out.push({term:m[1], meaning:m[2]}); }
+        else{ // fallback: single word lines ignored
+          const p=line.split(',');
+          if(p.length>=2) out.push({term:p[0], meaning:p.slice(1).join(',')});
+        }
+      });
+      return out;
+    }
+
+    byId('parse').onclick=()=>{ addItems(parseLines(byId('bulk').value)); byId('bulk').value=''; };
+    byId('example').onclick=()=>{
+      byId('bulk').value = `CPU : Central Processing Unit\nRAM : Random Access Memory\nGPU : Graphics Processing Unit\nHTTP : Hypertext Transfer Protocol\nJSON : JavaScript Object Notation`;
+    };
+    byId('exportJson').onclick=()=>{
+      const blob = new Blob([JSON.stringify({items:state.items},null,2)], {type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='revision_terms.json'; a.click();
+    };
+    byId('file').onchange=(e)=>{
+      const f=e.target.files[0]; if(!f) return;
+      const r=new FileReader(); r.onload=()=>{
+        try{
+          if(f.name.endsWith('.json')){ const d=JSON.parse(r.result); if(d.items) addItems(d.items); else throw new Error('No items[] in JSON'); }
+          else { addItems(parseLines(r.result)); }
+        }catch(err){ alert('Import failed: '+err.message); }
+      }; r.readAsText(f);
+      e.target.value='';
+    };
+    byId('wipe').onclick=()=>{ if(confirm('Delete ALL terms?')){ state.items=[]; save(); render(); } };
+
+    // ---------- Flashcards ----------
+    let deck=[]; // working set after filters
+    function rebuildOrder(){
+      const list = filtered();
+      deck = list.slice();
+      shuffle(deck);
+      state.order = deck.map(x=>x.id);
+      state.idx=0;
+    }
+    function currentItem(){
+      if(!deck.length) return null;
+      return deck[state.idx] || deck[0];
+    }
+
+    function setupFlash(){ rebuildOrder(); drawFlash(); }
+
+    function drawFlash(){
+      const item = currentItem();
+      const fcQ = byId('fcQ'), fcA = byId('fcA');
+      if(!item){ fcQ.textContent='Add some terms to begin'; fcA.hidden=true; return; }
+      fcA.hidden=true;
+      fcQ.textContent = state.reverse ? item.meaning : item.term;
+      fcA.textContent = state.reverse ? item.term : item.meaning;
+      const pct = deck.length? ((state.idx+1)/deck.length*100)|0 : 0; byId('bar').style.width=pct+'%';
+    }
+
+    function next(n){ if(!deck.length) return; state.idx = (state.idx + n + deck.length) % deck.length; drawFlash(); }
+
+    byId('flip').onclick=()=>{ const a=byId('fcA'); a.hidden=!a.hidden; };
+    byId('prev').onclick=()=>next(-1);
+    byId('next').onclick=()=>next(1);
+    byId('gotIt').onclick=()=>{ const it=currentItem(); if(it){ it.right=(it.right||0)+1; save(); next(1);} };
+    byId('retry').onclick=()=>{ const it=currentItem(); if(it){ it.wrong=(it.wrong||0)+1; save(); // reinsert sooner
+      const i=state.idx; deck.splice(i+2,0,deck.splice(i,1)[0]); drawFlash(); } };
+
+    // ---------- Quiz (multiple choice) ----------
+    let qIdx=0, qSet=[];
+    function setupQuiz(){
+      const list = filtered(); if(list.length<4){ byId('mqQ').textContent='Need at least 4 items for a quiz.'; byId('choices').innerHTML=''; return; }
+      qSet = shuffle(list.slice()).slice(0,Math.min(30,list.length));
+      qIdx=0; drawMCQ();
+    }
+    function drawMCQ(){
+      const qbar = byId('qbar'); qbar.style.width = (qSet.length? ((qIdx)/qSet.length*100):0)+'%';
+      const q = qSet[qIdx]; if(!q){ byId('mqQ').textContent='Done! Start again via Shuffle or switch tabs.'; byId('choices').innerHTML=''; return; }
+      const ask = state.reverse ? q.meaning : q.term;
+      const ans = state.reverse ? q.term : q.meaning;
+      byId('mqQ').textContent = ask;
+      const pool = shuffle(state.items.filter(x=>x.id!==q.id)).slice(0,3).map(x=> state.reverse? x.term : x.meaning);
+      const opts = shuffle([ans, ...pool]);
+      const box = byId('choices'); box.innerHTML='';
+      opts.forEach(opt=>{
+        const b=document.createElement('button'); b.className='choice'; b.textContent=opt; b.onclick=()=>{
+          const correct = opt===ans; b.classList.add(correct?'correct':'wrong');
+          if(correct){ q.right=(q.right||0)+1; save(); setTimeout(()=>{ qIdx++; drawMCQ(); }, 350); }
+          else{ q.wrong=(q.wrong||0)+1; save(); [...box.children].forEach(c=>{ if(c.textContent===ans) c.classList.add('correct'); }); }
+        }; box.appendChild(b);
+      });
+    }
+
+    // ---------- Controls & bindings ----------
+    byId('shuffleBtn').onclick=()=>{ rebuildOrder(); render(); if(!views.flash.hidden) drawFlash(); if(!views.quiz.hidden) setupQuiz(); };
+    byId('starredBtn').onclick=()=>{ state.showStarred=!state.showStarred; rebuildOrder(); render(); };
+    byId('reverseBtn').onclick=()=>{ state.reverse=!state.reverse; rebuildOrder(); render(); if(!views.flash.hidden) drawFlash(); if(!views.quiz.hidden) setupQuiz(); };
+    byId('resetBtn').onclick=()=>{ if(confirm('Reset right/wrong counters for all items?')){ state.items.forEach(i=>{i.right=0;i.wrong=0}); save(); render(); }};
+    byId('q').addEventListener('input',()=>{ render(); });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown',(e)=>{
+      if(views.flash.hidden) return;
+      if(e.key==='ArrowRight'){ next(1); }
+      if(e.key==='ArrowLeft'){ next(-1); }
+      if(e.key.toLowerCase()==='f'){ byId('flip').click(); }
+    });
+
+    // Init
+    load();
+    // Preload Colin's music terms if deck is empty
+    if(!state.items || !state.items.length){
+      const PRELOAD = [
+        {term:'A', meaning:'At, To, By, For, In, In the style of'},
+        {term:'a tempo', meaning:'in time'},
+        {term:'accelerando (or accel.)', meaning:'gradually getting faster'},
+        {term:'adagio', meaning:'slow'},
+        {term:'Al, Alla', meaning:'In the manner/style of'},
+        {term:'Allargando', meaning:'Broadening (getting a little slower and a little louder)'},
+        {term:'allegretto', meaning:'fairly quick'},
+        {term:'allegro', meaning:'quick'},
+        {term:'andante', meaning:'at a walking pace / moderate speed'},
+        {term:'cantabile', meaning:'in a singing style'},
+        {term:'Con, Col', meaning:'With'},
+        {term:'crescendo (or cresc.)', meaning:'gradually getting louder'},
+        {term:'da capo (or D.C.)', meaning:'from the beginning'},
+        {term:'Dal segno or D.S.', meaning:'From the sign'},
+        {term:'decrescendo (or decresc.)', meaning:'gradually getting quieter'},
+        {term:'diminuendo (or dim.)', meaning:'gradually getting quieter'},
+        {term:'dolce', meaning:'sweet'},
+        {term:'E, Ed', meaning:'And'},
+        {term:'Espressivo or Espress. or Espr.', meaning:'Expressive'},
+        {term:'f (forte)', meaning:'loud'},
+        {term:'ff (fortissimo)', meaning:'very loud'},
+        {term:'fine / al fine', meaning:'end'},
+        {term:'Fortepiano or FP', meaning:'Loud then immediately soft'},
+        {term:'Grave', meaning:'Very slow and solemn'},
+        {term:'Grazioso', meaning:'Gracefully'},
+        {term:'Largo', meaning:'Slow and stately'},
+        {term:'legato', meaning:'smooth'},
+        {term:'Lento', meaning:'Slowly'},
+        {term:'Ma, ma', meaning:'But'},
+        {term:'Marcia', meaning:'March'},
+        {term:'Meno', meaning:'Less'},
+        {term:'mf (mezzo forte)', meaning:'moderately loud'},
+        {term:'moderato', meaning:'at a moderate speed'},
+        {term:'Molto', meaning:'Very, Much'},
+        {term:'Mosso, Moto', meaning:'Movement'},
+        {term:'mp (mezzo piano)', meaning:'moderately soft'},
+        {term:'Non', meaning:'Not'},
+        {term:'p (piano)', meaning:'quiet'},
+        {term:'Più', meaning:'More'},
+        {term:'Poco', meaning:'Little'},
+        {term:'pp (pianissimo)', meaning:'very quiet'},
+        {term:'Presto', meaning:'Very fast'},
+        {term:'rallentando (or rall.)', meaning:'gradually getting slower'},
+        {term:'ritardando (or rit.)', meaning:'gradually getting slower'},
+        {term:'Ritenuto, riten., rit.)', meaning:'Held back'},
+        {term:'Senza', meaning:'Without'},
+        {term:'staccato (or stacc.)', meaning:'short and detached'},
+        {term:'Tenuto', meaning:'Held'},
+        {term:'Troppo', meaning:'Too much'},
+        {term:'Vivace', meaning:'Lively and quickly'},
+        {term:'Vivo', meaning:'Lively and quickly'}
+      ];
+      addItems(PRELOAD);
+    }
+    render();
+  </script>
+</body>
+</html>

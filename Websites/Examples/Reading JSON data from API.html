@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1 id="header">Example of reading JSON data from an API</h1>
+<p id="fundname"></p>
+<button type="button" onclick="buttonClicked()">Show fund name</button>
+
+<div id="output"></div>
+
+<script>
+// Define the API URL
+const apiUrl = 'https://rubricsapiapp.azurewebsites.net/api/FundPerformance';
+var fundName = "not set";
+
+// Make a GET request
+fetch(apiUrl)
+  .then(response => {
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Data not found');
+      } else if (response.status === 500) {
+        throw new Error('Server error');
+      } else {
+        throw new Error('Network response was not ok');
+      }
+    }
+    return response.json();
+  })
+  .then(data => {
+
+	fundname = data[0].FundName;
+	
+	let table = "<table border='1'><hr><th>Fund</th><th>Share Class</th><th>NAV</th></hr>";
+	
+	for (let i in data) {
+	  table += `<tr><td>${data[i].FundName}</td><td>${data[i].ShareClass}</td><td>${data[i].NAVpershare}</td></tr>`;
+	}
+	table += "</table>"
+
+
+	document.getElementById("fundname").innerHTML = "not set";
+    document.getElementById('output').innerHTML = table;
+//    console.log(table);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+  
+  function buttonClicked(){
+	document.getElementById("fundname").innerHTML = fundname;
+  }
+</script>
+</body>
+</html>

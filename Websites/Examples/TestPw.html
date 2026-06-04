@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hash Password Example</title>
+</head>
+<body>
+  <h2>Password Hashing Example</h2>
+  <input type="password" id="password" placeholder="Enter your password">
+  <button onclick="hashPassword()">Hash Password</button>
+  <p id="hashedPassword">Hash will appear here</p>
+
+  <script>
+    async function hashPassword() {
+      const password = document.getElementById("password").value;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      
+      // Convert hash to hex string
+      const hashArray = Array.from(new Uint8Array(hash));
+      const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+      
+      document.getElementById("hashedPassword").textContent = hashHex;
+    }
+  </script>
+</body>
+</html>

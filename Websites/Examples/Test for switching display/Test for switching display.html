@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<!-- <html lang="en"> -->
+<header>
+
+<link rel="stylesheet" href="Test for Display Switching.css">
+
+<nav>
+<div class="bg-white border-bottom box-shadow mb-3">
+<table>
+    <tr>
+        <td class="menu-item" onclick="Logout()">HOME</td>
+
+        <td class="menu-item" onclick="ShowFishPage()" style="text-align: center; font-size: large; font-weight: bold;width:10%;"><div id="fishlist">Fish List</div></td>
+        <td class="menu-item" onclick="ShowFood()" style="text-align: center; font-size: large; font-weight: bold;width:10%;"><div id="food">Food</div></td>
+        <td class="menu-item" onclick="ShowExamples()" style="text-align: center; font-size: large; font-weight: bold;width:10%;"><div id="examples">Examples</div></td>
+		<td style="width: 70%; text-align: right;"><img src="assets/images/Trees.jpg" width="40px" height="40px" alt="" style="vertical-align: middle; horizontal-align: right;" /></td>
+
+    </tr>
+</table>
+</div>
+</nav>
+</header>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test for Display Switching</title>
+</head>
+
+<header>
+	<h1>Test for Display Switching Header</h1>
+</header>
+	
+<body>
+    <!-- Using an iframe and having the login and content pages in separate html files didn't work as the js call can't find the button above when logging in -->
+    <div id="mainPage" style="display:none; width:100%;height:100%;">
+        <!-- <iframe style="height:100%;width:100%;border:none;" title="content" src="Content.html"></iframe> -->
+        <p>You are now logged in.</p>
+
+    </div>
+
+    <div id="loginPage">
+        <div>
+            <table style="margin-left: auto; margin-right: auto;">
+                <tr>
+                    <td>
+                        <p>
+                            Username &nbsp;&nbsp;<font id="namerequired" color="red" style="display:none;">{{usernameRequired}}</font><br />
+                            <!-- The name is needed as LastPass picks this up -->
+                            <input type="text" #inputUser name="username" [value]="username" (input)="updateusernameValue(inputUser.value)" (keyup.enter)="onEnter()" autocomplete="off">
+                        </p>
+                        <p>
+                            Password &nbsp;&nbsp;<font id="pwrequired" color="red" style="display:none;">{{pwRequired}}</font> <br />
+                            <!-- The #inputPw word screws things up if it has the same name as the var-->
+                            <!-- The (input)= passes the values to the component. the [value]= gets the value from the component -->
+                            <input type="password" #inputPw [value]="pw" (input)="updatepwValue(inputPw.value)" (keyup.enter)="onEnter()" autocomplete="off">
+                        </p>
+
+                        <button type="button" onclick="Login()">Login</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="fishPage" style="display:none;">
+        <div>
+            <table>
+                <tr><td>Trout</td></tr>
+                <tr><td>Salmon</td></tr>
+                <tr><td>Sardines</td></tr>
+                <tr><td>Cod</td></tr>
+                <tr><td>Plaice</td></tr>
+                <tr><td>Pike</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="foodPage" style="display:none;">
+        <div>
+            <table>
+                <tr><td>Bread</td></tr>
+                <tr><td>Cheese</td></tr>
+                <tr><td>Sausages</td></tr>
+                <tr><td>Steak</td></tr>
+                <tr><td>Apples</td></tr>
+                <tr><td>Crisps</td></tr>
+                <tr><td>Chocolate</td></tr>
+                <tr><td>Porridge</td></tr>
+                <tr><td>Salad</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="examplesPage" style="display:none;">
+        <div>
+            <h2>Here are the examples.</h2>
+            <p>Select * from ThisTable.</p>
+        </div>
+    </div>
+
+</body>
+
+<footer class="border-top footer text-muted">
+  <div>
+    <table style="margin-left:auto;margin-right:auto;">
+      <tbody>
+        <tr>
+          <td class="rub-darkgrey">&copy; 2025 - Test for Display Switching Footer</td>
+          <td class="rub-darkgrey" style="font-size: 8px; text-align: right; width: 30%;">version 1.0</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</footer>
+
+<script src="Test for Switching Display.js"></script>
+
+</html>
