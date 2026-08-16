@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -17,10 +18,11 @@ namespace SetWindowPosition
             // Example:
             //   SetWindowPosition.exe eurotrucks2 -1080 0 6000 1920 --wait-seconds 15
             //
-            // Runs as a tray app: checks every second for the process's window and,
-            // the moment it appears, positions it and shows a tray notification.
-            // Keeps watching afterward so it repositions again if the window closes
-            // and reopens (e.g. the game is restarted).
+            // Opens a normal window (Alt-Tab visible) that shows the parameters
+            // you passed in and checks every second for the process's window.
+            // The moment it appears, it's positioned and the window shows
+            // that it was found. Keeps watching afterward so it repositions
+            // again if the window closes and reopens (e.g. the game is restarted).
 
             if (args.Length < 5)
             {
@@ -44,14 +46,15 @@ namespace SetWindowPosition
 
             var settings = new MonitorSettings(processName, x, y, width, height, borderless, waitSeconds);
 
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            // Stay DPI-unaware so Windows scales our SetWindowPos coordinates the
+            // same way it did for the original console version — otherwise the
+            // X/Y/width/height values you're used to no longer land in the same
+            // physical place on a scaled display.
+            Application.SetHighDpiMode(HighDpiMode.DpiUnaware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            using (var context = new WindowWatcherContext(settings))
-            {
-                Application.Run(context);
-            }
+            Application.Run(new MainForm(settings));
 
             return 0;
         }
@@ -95,8 +98,8 @@ namespace SetWindowPosition
                 "  --borderless       Strip the title bar/border from the window before positioning it.\n\n" +
                 "Example:\n" +
                 "  SetWindowPosition.exe eurotrucks2 -1080 0 6000 1920 --wait-seconds 15\n\n" +
-                "Once running, the app sits in the system tray and checks every second for\n" +
-                "the process's window, positioning it and notifying you the moment it appears.";
+                "Once running, the app window shows the parameters you passed in and checks\n" +
+                "every second for the process's window, positioning it the moment it appears.";
         }
     }
 
@@ -124,59 +127,178 @@ namespace SetWindowPosition
         }
     }
 
-    internal sealed class WindowWatcherContext : ApplicationContext
+    internal sealed class MainForm : Form
     {
         private const int PollIntervalMs = 1000;
 
-        private readonly MonitorSettings _settings;
-        private readonly NotifyIcon _trayIcon;
-        private readonly Icon _watchingIcon;
-        private readonly Icon _foundIcon;
         private readonly System.Windows.Forms.Timer _timer;
+        private readonly Icon _appIcon;
+        private readonly Label _statusLabel;
+        private readonly Label _lastCheckedLabel;
+        private readonly Panel _statusPanel;
+
+        private readonly TextBox _processNameBox;
+        private readonly NumericUpDown _xBox;
+        private readonly NumericUpDown _yBox;
+        private readonly NumericUpDown _widthBox;
+        private readonly NumericUpDown _heightBox;
+        private readonly CheckBox _borderlessBox;
+        private readonly NumericUpDown _waitSecondsBox;
+
+        private MonitorSettings _settings;
         private bool _isPositioned;
 
-        public WindowWatcherContext(MonitorSettings settings)
+        public MainForm(MonitorSettings settings)
         {
             _settings = settings;
-            _watchingIcon = CreateDotIcon(Color.Gray);
-            _foundIcon = CreateDotIcon(Color.LimeGreen);
+            _appIcon = CreateAppIcon();
 
-            var menu = new ContextMenuStrip();
-            menu.Items.Add($"Watching for '{_settings.ProcessName}'").Enabled = false;
-            menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Exit", null, (_, _) => ExitApplication());
+            Text = "Set Window Pos";
+            Icon = _appIcon;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            StartPosition = FormStartPosition.CenterScreen;
+            ClientSize = new Size(420, 340);
 
-            _trayIcon = new NotifyIcon
+            var layout = new TableLayoutPanel
             {
-                Icon = _watchingIcon,
-                Text = Truncate($"Watching for '{_settings.ProcessName}'..."),
-                ContextMenuStrip = menu,
-                Visible = true
+                Dock = DockStyle.Top,
+                ColumnCount = 2,
+                Padding = new Padding(12),
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
             };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+            _processNameBox = new TextBox { Text = settings.ProcessName, Width = 220 };
+            _xBox = CreateNumericBox(settings.X);
+            _yBox = CreateNumericBox(settings.Y);
+            _widthBox = CreateNumericBox(settings.Width, min: 1);
+            _heightBox = CreateNumericBox(settings.Height, min: 1);
+            _borderlessBox = new CheckBox { Checked = settings.Borderless };
+            _waitSecondsBox = CreateNumericBox(settings.WaitSeconds, min: 0, max: 600);
+
+            AddRow(layout, "Process name:", _processNameBox);
+            AddRow(layout, "X:", _xBox);
+            AddRow(layout, "Y:", _yBox);
+            AddRow(layout, "Width:", _widthBox);
+            AddRow(layout, "Height:", _heightBox);
+            AddRow(layout, "Borderless:", _borderlessBox);
+            AddRow(layout, "Wait seconds:", _waitSecondsBox);
+
+            var applyButton = new Button { Text = "Apply", AutoSize = true };
+            applyButton.Click += (_, _) => ApplySettings();
+            AddRow(layout, string.Empty, applyButton);
+
+            Controls.Add(layout);
+
+            _statusPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Gainsboro
+            };
+
+            _statusLabel = new Label
+            {
+                Text = $"Watching for '{settings.ProcessName}'...",
+                Font = new Font(Font.FontFamily, 12, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Top,
+                Height = 60
+            };
+
+            _lastCheckedLabel = new Label
+            {
+                Text = string.Empty,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Top,
+                Height = 24
+            };
+
+            _statusPanel.Controls.Add(_lastCheckedLabel);
+            _statusPanel.Controls.Add(_statusLabel);
+            Controls.Add(_statusPanel);
 
             _timer = new System.Windows.Forms.Timer { Interval = PollIntervalMs };
             _timer.Tick += (_, _) => CheckWindow();
 
-            if (_settings.WaitSeconds > 0)
+            Load += (_, _) => StartWatching(_settings.WaitSeconds);
+        }
+
+        private static NumericUpDown CreateNumericBox(int value, int min = -20000, int max = 20000)
+        {
+            return new NumericUpDown
             {
-                var startupDelay = new System.Windows.Forms.Timer { Interval = _settings.WaitSeconds * 1000 };
+                Minimum = min,
+                Maximum = max,
+                Value = Math.Max(min, Math.Min(max, value)),
+                Width = 100
+            };
+        }
+
+        private void ApplySettings()
+        {
+            string processName = _processNameBox.Text.Trim();
+            if (processName.Length == 0)
+            {
+                MessageBox.Show(this, "Process name cannot be empty.", "Set Window Pos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _settings = new MonitorSettings(
+                processName,
+                (int)_xBox.Value,
+                (int)_yBox.Value,
+                (int)_widthBox.Value,
+                (int)_heightBox.Value,
+                _borderlessBox.Checked,
+                (int)_waitSecondsBox.Value);
+
+            _isPositioned = false;
+            _timer.Stop();
+            StartWatching(_settings.WaitSeconds);
+        }
+
+        private void StartWatching(int waitSeconds)
+        {
+            if (waitSeconds > 0)
+            {
+                _statusPanel.BackColor = Color.Gainsboro;
+                _statusLabel.Text = $"Waiting {waitSeconds}s before watching for '{_settings.ProcessName}'...";
+                var startupDelay = new System.Windows.Forms.Timer { Interval = waitSeconds * 1000 };
                 startupDelay.Tick += (_, _) =>
                 {
                     startupDelay.Stop();
                     startupDelay.Dispose();
+                    _statusLabel.Text = $"Watching for '{_settings.ProcessName}'...";
                     _timer.Start();
                 };
                 startupDelay.Start();
             }
             else
             {
+                _statusPanel.BackColor = Color.Gainsboro;
+                _statusLabel.Text = $"Watching for '{_settings.ProcessName}'...";
                 _timer.Start();
             }
+        }
+
+        private static void AddRow(TableLayoutPanel layout, string label, Control control)
+        {
+            int row = layout.RowCount;
+            layout.RowCount++;
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            layout.Controls.Add(new Label { Text = label, Font = new Font(Control.DefaultFont, FontStyle.Bold), AutoSize = true, Margin = new Padding(3, 6, 12, 3) }, 0, row);
+            control.Margin = new Padding(3);
+            layout.Controls.Add(control, 1, row);
         }
 
         private void CheckWindow()
         {
             IntPtr handle = WindowFinder.FindMainWindowHandle(_settings.ProcessName);
+            _lastCheckedLabel.Text = $"Last checked: {DateTime.Now:HH:mm:ss}";
 
             if (handle != IntPtr.Zero)
             {
@@ -184,47 +306,68 @@ namespace SetWindowPosition
                 {
                     WindowFinder.PositionWindow(handle, _settings);
                     _isPositioned = true;
-                    _trayIcon.Icon = _foundIcon;
-                    _trayIcon.Text = Truncate($"'{_settings.ProcessName}' found and positioned.");
-                    _trayIcon.BalloonTipTitle = "Window found";
-                    _trayIcon.BalloonTipText = $"'{_settings.ProcessName}' appeared and was moved/resized.";
-                    _trayIcon.ShowBalloonTip(3000);
+                    _statusPanel.BackColor = Color.LightGreen;
+                    _statusLabel.Text = $"Found and positioned at {DateTime.Now:HH:mm:ss}";
+                    System.Media.SystemSounds.Asterisk.Play();
                 }
             }
             else if (_isPositioned)
             {
                 _isPositioned = false;
-                _trayIcon.Icon = _watchingIcon;
-                _trayIcon.Text = Truncate($"Watching for '{_settings.ProcessName}'...");
+                _statusPanel.BackColor = Color.Gainsboro;
+                _statusLabel.Text = $"Watching for '{_settings.ProcessName}'...";
             }
         }
 
-        private void ExitApplication()
+        private static Icon CreateAppIcon()
         {
-            _timer.Stop();
-            _trayIcon.Visible = false;
-            ExitThread();
-        }
-
-        private static string Truncate(string text)
-        {
-            // NotifyIcon.Text is limited to 127 characters.
-            return text.Length <= 127 ? text : text.Substring(0, 127);
-        }
-
-        private static Icon CreateDotIcon(Color color)
-        {
-            using var bitmap = new Bitmap(16, 16);
+            const int size = 64;
+            using var bitmap = new Bitmap(size, size);
             using (var g = Graphics.FromImage(bitmap))
             {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.Clear(Color.Transparent);
-                using var brush = new SolidBrush(color);
-                g.FillEllipse(brush, 1, 1, 14, 14);
+
+                using (var bgPath = RoundedRect(new Rectangle(2, 2, size - 4, size - 4), 14))
+                using (var bgBrush = new LinearGradientBrush(new Rectangle(0, 0, size, size), Color.FromArgb(255, 0, 99, 177), Color.FromArgb(255, 0, 172, 193), 45f))
+                {
+                    g.FillPath(bgBrush, bgPath);
+                }
+
+                using (var whitePen = new Pen(Color.White, 4f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                {
+                    int cx = size / 2;
+                    int cy = size / 2;
+                    const int r = 14;
+                    const int tick = 8;
+
+                    g.DrawEllipse(whitePen, cx - r, cy - r, r * 2, r * 2);
+                    using (var dotBrush = new SolidBrush(Color.White))
+                    {
+                        g.FillEllipse(dotBrush, cx - 4, cy - 4, 8, 8);
+                    }
+
+                    g.DrawLine(whitePen, cx, cy - r - tick, cx, cy - r + 4);
+                    g.DrawLine(whitePen, cx, cy + r - 4, cx, cy + r + tick);
+                    g.DrawLine(whitePen, cx - r - tick, cy, cx - r + 4, cy);
+                    g.DrawLine(whitePen, cx + r - 4, cy, cx + r + tick, cy);
+                }
             }
 
             IntPtr hIcon = bitmap.GetHicon();
             return Icon.FromHandle(hIcon);
+        }
+
+        private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+        {
+            int d = radius * 2;
+            var path = new GraphicsPath();
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         protected override void Dispose(bool disposing)
@@ -232,9 +375,7 @@ namespace SetWindowPosition
             if (disposing)
             {
                 _timer.Dispose();
-                _trayIcon.Dispose();
-                _watchingIcon.Dispose();
-                _foundIcon.Dispose();
+                _appIcon.Dispose();
             }
 
             base.Dispose(disposing);

@@ -1,15 +1,16 @@
 # SetWindowPosition
 
-A small Windows tray app that watches for a process's main window and
+A small Windows app that watches for a process's main window and
 moves/resizes it using the Win32 `SetWindowPos` API — the same mechanism
 SRWE uses, but scriptable so it can be launched automatically.
 
 Launch it once with your target window's process name and desired
-position/size, and it sits in the system tray, checking every second for
-that window. The moment it appears, it's positioned automatically and a
-tray notification confirms it. If the window later closes and reopens
-(e.g. the game is restarted), it's repositioned again. Right-click the
-tray icon and choose Exit to stop watching.
+position/size, and a normal window opens (Alt-Tab / taskbar visible)
+showing the parameters you passed in, and checks every second for that
+window. The moment it appears, it's positioned automatically and the
+window's status panel turns green with a confirmation and a sound. If
+the window later closes and reopens (e.g. the game is restarted), it's
+repositioned again. Close the window to stop watching.
 
 ## Build
 
@@ -84,6 +85,5 @@ to increase `--wait-seconds` if 15 isn't quite enough).
   handle is found, some games ignore `SetWindowPos` entirely for their
   main window; there's no way around that from outside the game's own
   code.
-- Since it's a tray app with no console window, launching it without
-  enough arguments shows a usage message box instead of printing to
-  the console.
+- Since it has no console window, launching it without enough arguments
+  shows a usage message box instead of printing to the console.
