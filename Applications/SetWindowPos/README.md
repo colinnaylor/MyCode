@@ -1,8 +1,15 @@
 # SetWindowPosition
 
-A tiny command-line tool that finds a running process's main window and
+A small Windows tray app that watches for a process's main window and
 moves/resizes it using the Win32 `SetWindowPos` API — the same mechanism
 SRWE uses, but scriptable so it can be launched automatically.
+
+Launch it once with your target window's process name and desired
+position/size, and it sits in the system tray, checking every second for
+that window. The moment it appears, it's positioned automatically and a
+tray notification confirms it. If the window later closes and reopens
+(e.g. the game is restarted), it's repositioned again. Right-click the
+tray icon and choose Exit to stop watching.
 
 ## Build
 
@@ -15,7 +22,7 @@ dotnet build -c Release
 
 The compiled exe will be at:
 ```
-bin\Release\net8.0\SetWindowPosition.exe
+bin\x64\Release\net8.0-windows\SetWindowPosition.exe
 ```
 
 ## Usage
@@ -32,10 +39,11 @@ SetWindowPosition.exe <processName> <x> <y> <width> <height> [options]
 
 | Option | Description | Default |
 |---|---|---|
-| `--wait-seconds N` | Wait N seconds before searching for the window (gives a slow-loading game time to finish launching) | 0 |
-| `--retries N` | How many times to retry finding the window if it isn't found immediately | 20 |
-| `--retry-delay-ms N` | Milliseconds between retries | 1000 |
+| `--wait-seconds N` | Wait N seconds before starting to watch for the window (gives a slow-loading game time to finish launching) | 0 |
 | `--borderless` | Strip the title bar/border before positioning | off |
+
+Once started, the app polls for the window every 1 second for as long as
+it's running — there's no retry limit; it just keeps watching.
 
 ### Example for your ETS2 triple-monitor setup
 
@@ -76,6 +84,6 @@ to increase `--wait-seconds` if 15 isn't quite enough).
   handle is found, some games ignore `SetWindowPos` entirely for their
   main window; there's no way around that from outside the game's own
   code.
-- The `--retries` / `--retry-delay-ms` loop exists because a game's
-  window might not exist yet the instant the process starts — this
-  keeps checking until it appears (or gives up after the retry count).
+- Since it's a tray app with no console window, launching it without
+  enough arguments shows a usage message box instead of printing to
+  the console.
